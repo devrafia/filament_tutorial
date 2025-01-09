@@ -62,9 +62,10 @@ class EmployeeResource extends Resource
                             ->live()
                             ->native(false)
                             ->required(),
-                        Forms\Components\Select::make('deparment_id')
-                            ->relationship('deparment', 'name')
+                        Forms\Components\Select::make('department_id')
+                            ->relationship('department', 'name')
                             ->searchable()
+                            ->preload()
                             ->native(false)
                             ->required(),
                     ])->columns(2),
@@ -83,7 +84,7 @@ class EmployeeResource extends Resource
                     ])->columns(3),
                 Section::make('User Address')
                     ->schema([
-                        Forms\Components\TextInput::make('User Address')
+                        Forms\Components\TextInput::make('address')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('zip_code')
@@ -93,8 +94,12 @@ class EmployeeResource extends Resource
                 Section::make('Dates')
                     ->schema([
                         Forms\Components\DatePicker::make('date_of_birth')
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
                             ->required(),
                         Forms\Components\DatePicker::make('date_hired')
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
                             ->required(),
                     ])->columns(2)
             ]);
