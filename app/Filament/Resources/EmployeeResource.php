@@ -4,15 +4,20 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmployeeResource\Pages;
 use App\Filament\Resources\EmployeeResource\RelationManagers;
+use App\Models\City;
 use App\Models\Employee;
+use App\Models\State;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 
 class EmployeeResource extends Resource
 {
@@ -32,17 +37,29 @@ class EmployeeResource extends Resource
                             ->relationship('country', 'name')
                             ->searchable()
                             ->preload()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('state_id', '');
+                                $set('city_id', '');
+                            })
                             ->native(false)
                             ->required(),
                         Forms\Components\Select::make('state_id')
-                            ->relationship('state', 'name')
+                            ->options(fn(Get $get): Collection => State::query()
+                                ->where('country_id', $get('country_id'))
+                                ->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
+                            ->live()
+                            ->afterStateUpdated(fn(Set $set) => $set('city_id', ''))
                             ->native(false)
                             ->required(),
                         Forms\Components\Select::make('city_id')
-                            ->relationship('city', 'name')
+                            ->options(fn(Get $get): Collection => City::query()
+                                ->where('state_id', $get('state_id'))
+                                ->pluck('name', 'id'))
                             ->searchable()
+                            ->live()
                             ->native(false)
                             ->required(),
                         Forms\Components\Select::make('deparment_id')
