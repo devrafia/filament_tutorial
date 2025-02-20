@@ -20,9 +20,12 @@ use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
+use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,7 +62,7 @@ class EmployeeResource extends Resource
 
     public static function getGlobalSearchEloquentQuery(): Builder
     {
-        return parent::getGlobalSearchEloquentQuery()->with(['country']);
+        return parent::getGlobalSearchEloquentQuery()->with(['country:id,name']);
     }
 
     public static function getNavigationBadge(): ?string
@@ -171,7 +174,8 @@ class EmployeeResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('first_name')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->getStateUsing(fn($record) => $record->first_name . ' - ' . $record->middle_name),
                 Tables\Columns\TextColumn::make('middle_name')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
@@ -199,10 +203,18 @@ class EmployeeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                QueryBuilder::make()
+                ->columns(1)
+                ->constraints([
+                    TextConstraint::make('first_name'),
+                    TextConstraint::make('middle_name'),
+                ])
+                ->constraintPickerColumns(1),
                 SelectFilter::make('Department')
                     ->relationship('department', 'name')
                     ->searchable()
                     ->preload()
+                    ->multiple()
                     ->label('Filter by Department')
                     ->indicator('Department'),
                 Filter::make('created_at')
@@ -240,15 +252,21 @@ class EmployeeResource extends Resource
             ], layout: FiltersLayout::AboveContent)->filtersFormColumns(3)
 
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                    ->successNotification(
-                        Notification::make()
-                            ->success()
-                            ->title('Employee Deleted')
-                            ->body('The employee successfully deleted')
-                    ),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                    ->slideOver(),
+                    Tables\Actions\DeleteAction::make()
+                        ->successNotification(
+                            Notification::make()
+                                ->success()
+                                ->title('Employee Deleted')
+                                ->body('The employee successfully deleted')
+                        ),
+                ])
+                ->label('Actions')
+                ->button()
+                ->size('sm')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -295,7 +313,7 @@ class EmployeeResource extends Resource
             'index' => Pages\ListEmployees::route('/'),
             'create' => Pages\CreateEmployee::route('/create'),
             // 'view' => Pages\ViewEmployee::route('/{record}'),
-            'edit' => Pages\EditEmployee::route('/{record}/edit'),
+            // 'edit' => Pages\EditEmployee::route('/{record}/edit'),
         ];
     }
 }

@@ -16,6 +16,7 @@ class CreateEmployee extends CreateRecord
         return Notification::make()
             ->success()
             ->title('Employee Created')
-            ->body('The employee successfully created.');
+            ->body('The employee successfully created.')
+            ->sendToDatabase(auth()->user());
     }
 }

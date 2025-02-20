@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\App\Pages\Tenancy\EditTeamProfile;
+use App\Filament\App\Pages\Tenancy\RegisterTeam;
+use App\Models\Team;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -63,6 +66,8 @@ class AppPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->tenant(Team::class, ownershipRelationship: 'team', slugAttribute: 'slug')
+            ->tenantRegistration(RegisterTeam::class)->tenantProfile(EditTeamProfile::class);
     }
 }

@@ -8,12 +8,14 @@ use App\Filament\Resources\StateResource\RelationManagers\CitiesRelationManager;
 use App\Filament\Resources\StateResource\RelationManagers\EmployeesRelationManager;
 use App\Models\State;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -42,7 +44,18 @@ class StateResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->required(),
+                    ->required()
+                    ->createOptionForm([
+                        TextInput::make('code')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('phonecode')
+                            ->required()
+                            ->maxLength(255),
+                    ]),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
@@ -80,6 +93,11 @@ class StateResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->groups([
+                Group::make('country.name')
+                    ->label('Country Name')
+                    ->collapsible()
             ]);
     }
 

@@ -9,9 +9,11 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class UserResource extends Resource
 {
@@ -37,7 +39,19 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->live()
+                    ->maxLength(255)
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (strlen($state) < 3) {
+                            $set('helperText', 'Masukkan minimal 3 karakter');
+                            $set('helperTextColor', 'red');
+                        } else {
+                            $set('helperText', 'Nama valid');
+                            $set('helperTextColor', 'green');
+                        }
+                    })
+                    ->helperText(fn ($get) => new HtmlString('<span style="color: '. $get('helperTextColor') . ';" >' . $get('helperText') . '</span>'))
+                    ->extraAttributes(fn ($get) => ['class' => $get('helperTextColor')]),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
@@ -58,6 +72,17 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
+                IconColumn::make('is_admin')
+                ->boolean()
+                ->trueIcon('heroicon-o-check-circle')
+                ->action(function ($record, $column) {
+                    $name = $column->getName();
+                    $record->update([
+                        $name => !$record->$name,
+                    ]);
+                })
+                ->falseIcon('heroicon-o-x-circle'),
+
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable(),

@@ -49,6 +49,7 @@ class AdminPanelProvider extends PanelProvider
                 'System Management',
                 'User Management'
             ])
+            // ->topNavigation()
             ->brandLogo(asset('images/logo.png'))
             ->favicon(asset('images/logo.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -56,6 +57,7 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
+            ->databaseNotifications()
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,

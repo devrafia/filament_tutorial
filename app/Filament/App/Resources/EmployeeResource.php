@@ -7,17 +7,22 @@ use App\Filament\App\Resources\EmployeeResource\RelationManagers;
 use App\Models\City;
 use App\Models\Employee;
 use App\Models\State;
+use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
+use phpDocumentor\Reflection\Types\Callable_;
 
 class EmployeeResource extends Resource
 {
@@ -61,7 +66,11 @@ class EmployeeResource extends Resource
                             ->native(false)
                             ->required(),
                         Forms\Components\Select::make('department_id')
-                            ->relationship('department', 'name')
+                            ->relationship(
+                                'department',
+                                 'name',
+                                 fn (Builder $query) => $query->whereBelongsTo(Filament::getTenant())
+                                )
                             ->searchable()
                             ->preload()
                             ->native(false)
@@ -99,7 +108,7 @@ class EmployeeResource extends Resource
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->required(),
-                    ])->columns(2)
+                    ])->columns(2),
             ]);
     }
 
